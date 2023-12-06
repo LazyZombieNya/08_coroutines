@@ -135,20 +135,22 @@ fun main() {
             try {
                 var authorsMap = HashMap<Long, Author>()
                 var authorsUnrequested = HashSet<Long>()
+                var i:Long
                 val posts = getPosts(client)
                     .map { post ->
+
                         async {
                             //авторы которые не используются в посте надо отсекать иначе крашится
                             val postComments = getComments(client, post.id)
+
                             postComments.forEach {
-                                if (!authorsUnrequested.contains(it.authorId)) {
-                                    authorsUnrequested.add(it.authorId)
-                                    if (!authorsMap.containsKey(it.authorId))
-                                        authorsMap.putIfAbsent(it.authorId, getAuthors(client, it.authorId))
-                                }
+                                    authorsMap.putIfAbsent(it.authorId, getAuthors(client, it.authorId))
+                               // println("authors_____+____:$authorsMap")
                             }
                             PostWithCommentsAndAuthors(post, authorsMap, postComments )
+                            println("postC_____+____:$postComments")
                         }
+
                     }.awaitAll()
                 println(posts)
             } catch (e: Exception) {
