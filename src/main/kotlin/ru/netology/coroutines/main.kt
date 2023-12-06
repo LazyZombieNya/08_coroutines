@@ -133,25 +133,20 @@ fun main() {
     with(CoroutineScope(EmptyCoroutineContext)) {
         launch {
             try {
-                var authorsMap = HashMap<Long, Author>()
-                var authorsUnrequested = HashSet<Long>()
-                var i:Long
+                val authorsMap = HashMap<Long, Author>()
                 val posts = getPosts(client)
                     .map { post ->
 
                         async {
                             //авторы которые не используются в посте надо отсекать иначе крашится
                             val postComments = getComments(client, post.id)
-
                             postComments.forEach {
-                                    authorsMap.putIfAbsent(it.authorId, getAuthors(client, it.authorId))
-                               // println("authors_____+____:$authorsMap")
+                                authorsMap.putIfAbsent(it.authorId, getAuthors(client, it.authorId))
                             }
                             PostWithCommentsAndAuthors(post, authorsMap, postComments )
-                            println("postC_____+____:$postComments")
                         }
-
                     }.awaitAll()
+                authorsMap.clear()//Чистим авторов, так как для каждого поста свои авторы коментариев
                 println(posts)
             } catch (e: Exception) {
                 e.printStackTrace()
